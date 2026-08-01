@@ -1,0 +1,10 @@
+{
+  "name": "n8n-ai-opportunity-monitor",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-workflow.mjs",
+    "check": "node scripts/validate-workflow.mjs"
+  }
+}
