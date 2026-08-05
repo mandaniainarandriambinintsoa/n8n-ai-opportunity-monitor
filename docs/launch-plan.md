@@ -13,9 +13,9 @@
 
 ## Publication order
 
-1. Test the workflow manually with a safe RSS feed.
-2. Publish the GitHub repository.
-3. Submit the workflow to n8n Creator Hub.
+1. Completed: test the workflow manually with a safe RSS feed.
+2. Completed: publish the GitHub repository.
+3. Completed on 2026-08-05: publish the workflow in n8n Creator Hub as [template 17715](https://n8n.io/workflows/17715-score-rss-opportunities-to-google-sheets-and-send-priority-digests-with-gmail/).
 4. Publish the technical case study in the n8n community.
 5. Answer relevant community questions before sharing on Reddit.
 6. Publish the build story on LinkedIn.

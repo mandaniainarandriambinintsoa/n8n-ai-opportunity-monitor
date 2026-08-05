@@ -4,6 +4,8 @@ Monitor RSS feeds for relevant freelance, hiring, sales or partnership opportuni
 
 This community edition is derived from a production opportunity-monitoring system. It contains no private API endpoint, credential identifier, client data or automatic outreach.
 
+[Use the official template on n8n](https://n8n.io/workflows/17715-score-rss-opportunities-to-google-sheets-and-send-priority-digests-with-gmail/)
+
 ## What it does
 
 1. Runs manually or every 30 minutes.
@@ -40,7 +42,7 @@ No paid AI API is required. The scoring is deterministic and fully editable.
 
 ## Setup
 
-1. Download [`workflow/opportunity-monitor.json`](workflow/opportunity-monitor.json).
+1. Use the [official n8n template](https://n8n.io/workflows/17715-score-rss-opportunities-to-google-sheets-and-send-priority-digests-with-gmail/) or download [`workflow/opportunity-monitor.json`](workflow/opportunity-monitor.json).
 2. Import it into n8n.
 3. Open **Configure Template**.
 4. Replace `PASTE_YOUR_RSS_FEED_URL_HERE` with your feed URL.
