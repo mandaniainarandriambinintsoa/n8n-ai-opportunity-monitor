@@ -6,6 +6,8 @@ This community edition is derived from a production opportunity-monitoring syste
 
 The repository also contains the public [International Opportunity Agent](workflow/international-opportunity-agent.json), which adds OpenRouter drafting and Gmail review while keeping human approval mandatory.
 
+The third public workflow is an [AI Customer Support Agent](workflow/ai-customer-support-agent.json). It demonstrates an n8n chat agent with OpenRouter, conversation memory, deterministic support tools and confirmation-gated Gmail escalation.
+
 [Use the official template on n8n](https://n8n.io/workflows/17715-score-rss-opportunities-to-google-sheets-and-send-priority-digests-with-gmail/)
 
 ## What it does

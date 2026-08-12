@@ -1,0 +1,237 @@
+{
+  "name": "Build an AI customer support agent with OpenRouter, memory and Gmail",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# Build an AI customer support agent with OpenRouter, memory and Gmail\n\n## Who is this for?\nCustomer support teams, agencies, consultants, and n8n builders who want a practical AI agent showcase with conversation memory, useful tools, and a safe human handoff. The included order data is fictional, so the workflow can be tested without exposing a real commerce system.\n\n## How it works\nA message submitted in n8n Chat passes through one visible configuration node and reaches the Customer Support Agent. OpenRouter generates the response while Conversation Memory preserves short-term context. The agent can search a compact help center, look up a fictional order, and check return eligibility through deterministic Code Tools. These tools return traceable data instead of letting the model invent policies or order statuses. If the user still needs help, the agent prepares a structured escalation and can send it to Gmail only after the user explicitly asks for a human and confirms the case summary.\n\n## How to set it up\n1. Edit **Configure support agent** with your company name, support inbox, support hours, and return window.\n2. Connect an OpenRouter credential to **OpenRouter Chat Model** and choose a model available to your account.\n3. Connect Gmail OAuth to **Escalate to human support**.\n4. Test from the manual chat using the suggested prompts before making the chat public.\n5. Keep the workflow inactive until every credential, policy, and escalation recipient has been verified.\n\n## Requirements\n- n8n Cloud or self-hosted n8n\n- OpenRouter API credential\n- Gmail OAuth credential for optional escalation\n\n## Safety and customization\nThe agent cannot issue refunds, modify orders, or email customers. Replace the fictional tools with authenticated production integrations only after adding identity verification, authorization, rate limits, audit logs, and data-retention rules. Never place secrets inside prompts or configuration fields.",
+        "height": 650,
+        "width": 2640,
+        "color": 4
+      },
+      "id": "31000000-0000-4000-8000-000000000001",
+      "name": "Read me first",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-80, -720]
+    },
+    {
+      "parameters": {
+        "content": "## 1. Configure and chat\n\nStart with the manual n8n chat. Edit only **Configure support agent** to set the company name, escalation inbox, support hours and return window.\n\nThe configuration node preserves the incoming chat fields so the session can continue normally.",
+        "height": 430,
+        "width": 650
+      },
+      "id": "31000000-0000-4000-8000-000000000002",
+      "name": "Step 1 - Configure and chat",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-80, 300]
+    },
+    {
+      "parameters": {
+        "content": "## 2. Agent reasoning\n\nOpenRouter interprets each request while **Conversation Memory** keeps the recent discussion available.\n\nThe system prompt names every connected tool, forbids invented facts and requires clarification when order details are missing.",
+        "height": 430,
+        "width": 600
+      },
+      "id": "31000000-0000-4000-8000-000000000003",
+      "name": "Step 2 - Agent reasoning",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [590, 300]
+    },
+    {
+      "parameters": {
+        "content": "## 3. Safe support tools\n\nThe three Code Tools use fictional or policy-only data:\n- search help-center articles;\n- return a deterministic demo order status;\n- evaluate a return window.\n\nThey perform no external write action and are safe to explore.",
+        "height": 430,
+        "width": 760
+      },
+      "id": "31000000-0000-4000-8000-000000000004",
+      "name": "Step 3 - Safe support tools",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [1210, 300]
+    },
+    {
+      "parameters": {
+        "content": "## 4. Human escalation\n\nGmail sends a structured case only to the configured internal support inbox. The agent must first summarize the issue and receive an explicit confirmation such as `Yes, escalate`.\n\nNo email is sent to the customer and no operational action is automated.",
+        "height": 430,
+        "width": 650
+      },
+      "id": "31000000-0000-4000-8000-000000000005",
+      "name": "Step 4 - Human escalation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [1990, 300]
+    },
+    {
+      "parameters": {
+        "public": false,
+        "mode": "hostedChat",
+        "availableInChat": false,
+        "options": {
+          "responseMode": "lastNode",
+          "inputPlaceholder": "Ask about an order, return or policy...",
+          "title": "Customer support assistant",
+          "subtitle": "Test the agent with fictional order data."
+        }
+      },
+      "id": "31000000-0000-4000-8000-000000000006",
+      "name": "When chat message received",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [0, 480]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "company", "name": "companyName", "type": "string", "value": "Northstar Store" },
+            { "id": "email", "name": "supportEmail", "type": "string", "value": "SUPPORT_TEAM@example.com" },
+            { "id": "hours", "name": "supportHours", "type": "string", "value": "Monday to Friday, 09:00-17:00 CET" },
+            { "id": "window", "name": "returnWindowDays", "type": "number", "value": 30 }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "31000000-0000-4000-8000-000000000007",
+      "name": "Configure support agent",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [280, 480]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "=You are the customer support assistant for {{ $json.companyName }}. Support hours: {{ $json.supportHours }}. Standard return window: {{ $json.returnWindowDays }} days.\n\nUse the exact connected tools when needed:\n- Search help center: answer policy and service questions from the provided knowledge base.\n- Look up fictional order: return a demo status only when the user supplies an order ID such as ORD-1042. Always state that this is fictional showcase data.\n- Check return eligibility: calculate policy eligibility from the number of days and item condition supplied by the user.\n- Escalate to human support: send an internal case to the support team.\n\nRules:\n1. Never invent an order status, policy, customer identity, refund or completed action.\n2. Ask a concise clarification if required information is missing.\n3. Never request passwords, payment-card data, government IDs or sensitive personal data.\n4. Never claim to issue refunds, cancel orders or edit accounts.\n5. Before using Escalate to human support, summarize the issue and ask for explicit confirmation. Call it only after the user clearly confirms with wording such as 'Yes, escalate'.\n6. The escalation email is internal. Do not use the tool to email the customer.\n7. Keep answers concise, helpful and transparent about fictional showcase data.",
+          "maxIterations": 6,
+          "returnIntermediateSteps": false,
+          "enableStreaming": false
+        }
+      },
+      "id": "31000000-0000-4000-8000-000000000008",
+      "name": "Customer Support Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [760, 480]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-5.4",
+        "options": {
+          "temperature": 0.2,
+          "maxTokens": 1000,
+          "maxRetries": 2,
+          "timeout": 120000
+        }
+      },
+      "id": "31000000-0000-4000-8000-000000000009",
+      "name": "OpenRouter Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [650, 650]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "fromInput",
+        "contextWindowLength": 8
+      },
+      "id": "31000000-0000-4000-8000-000000000010",
+      "name": "Conversation Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [850, 650]
+    },
+    {
+      "parameters": {
+        "description": "Searches the fictional store help center for shipping, returns, warranty, account and payment policies. Input query should describe the customer's question.",
+        "language": "javaScript",
+        "jsCode": "const q=String(query||'').toLowerCase();const docs=[{topic:'shipping',keywords:['shipping','delivery','late','tracking'],answer:'Standard delivery takes 3-5 business days. Tracking appears after dispatch. A delay longer than 7 business days should be escalated.'},{topic:'returns',keywords:['return','refund','exchange'],answer:'Unopened items can be returned within 30 days of delivery. Opened items require human review. Final-sale and personalized items are excluded.'},{topic:'warranty',keywords:['warranty','broken','defect','damaged'],answer:'Manufacturing defects are covered for 12 months. Accidental damage is excluded. Keep the order number and photos for human review.'},{topic:'account',keywords:['account','password','login'],answer:'Use the password-reset link. Support will never request a password, payment-card number or one-time security code.'},{topic:'payment',keywords:['payment','card','charged','invoice'],answer:'Payment disputes and duplicate charges require human review. Never share full card details in chat.'}];const ranked=docs.map(d=>({...d,score:d.keywords.filter(k=>q.includes(k)).length})).sort((a,b)=>b.score-a.score);const hit=ranked[0];return JSON.stringify(hit&&hit.score>0?{topic:hit.topic,answer:hit.answer}:{topic:'unknown',answer:'No matching help-center article. Ask one clarification or offer human escalation.'});"
+      },
+      "id": "31000000-0000-4000-8000-000000000011",
+      "name": "Search help center",
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [1250, 620]
+    },
+    {
+      "parameters": {
+        "description": "Looks up a fictional demonstration order. Input query must include an order ID in the format ORD-1234. Never present the result as real customer data.",
+        "language": "javaScript",
+        "jsCode": "const input=String(query||'').toUpperCase();const match=input.match(/ORD-\\d{4}/);if(!match)return JSON.stringify({error:'Missing order ID. Ask for an ID such as ORD-1042.'});const id=match[0];let hash=0;for(const ch of id)hash=(hash*31+ch.charCodeAt(0))>>>0;const statuses=[{status:'processing',detail:'The fictional order is being prepared.',eta:'Dispatch in 1-2 business days'},{status:'shipped',detail:'The fictional order left the warehouse.',eta:'Delivery in 2-3 business days'},{status:'delayed',detail:'The fictional carrier reported a delay.',eta:'New estimate in 48 hours'},{status:'delivered',detail:'The fictional order is marked delivered.',eta:'Delivered yesterday'}];return JSON.stringify({demoData:true,orderId:id,...statuses[hash%statuses.length]});"
+      },
+      "id": "31000000-0000-4000-8000-000000000012",
+      "name": "Look up fictional order",
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [1500, 620]
+    },
+    {
+      "parameters": {
+        "description": "Checks return eligibility from plain text. Input query must include days since delivery and whether the item is unopened, opened, final sale or personalized.",
+        "language": "javaScript",
+        "jsCode": "const input=String(query||'').toLowerCase();const daysMatch=input.match(/(\\d+)\\s*day/);if(!daysMatch)return JSON.stringify({error:'Missing number of days since delivery.'});const days=Number(daysMatch[1]);const excluded=/final[- ]sale|personalized|custom/.test(input);const unopened=/unopened|sealed/.test(input);const opened=/opened|used/.test(input);if(excluded)return JSON.stringify({eligible:false,reason:'Final-sale and personalized items are excluded from standard returns.',needsHumanReview:true});if(days>30)return JSON.stringify({eligible:false,reason:'The request is outside the 30-day standard return window.',needsHumanReview:true});if(unopened)return JSON.stringify({eligible:true,reason:'The unopened item is within the 30-day standard return window.',needsHumanReview:false});if(opened)return JSON.stringify({eligible:null,reason:'Opened items require human review.',needsHumanReview:true});return JSON.stringify({eligible:null,reason:'Item condition is missing. Ask whether it is unopened or opened.',needsHumanReview:false});"
+      },
+      "id": "31000000-0000-4000-8000-000000000013",
+      "name": "Check return eligibility",
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [1750, 620]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $('Configure support agent').first().json.supportEmail }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('subject', 'Internal support case subject without sensitive data') }}",
+        "emailType": "html",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('message', 'Structured internal case summary: issue, supplied order ID, checks performed, unresolved question and requested next step. State that it came from the AI showcase. Do not include passwords, payment data or invented facts.') }}",
+        "options": {
+          "appendAttribution": true
+        }
+      },
+      "id": "31000000-0000-4000-8000-000000000014",
+      "name": "Escalate to human support",
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [2150, 620]
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [[{ "node": "Configure support agent", "type": "main", "index": 0 }]]
+    },
+    "Configure support agent": {
+      "main": [[{ "node": "Customer Support Agent", "type": "main", "index": 0 }]]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [[{ "node": "Customer Support Agent", "type": "ai_languageModel", "index": 0 }]]
+    },
+    "Conversation Memory": {
+      "ai_memory": [[{ "node": "Customer Support Agent", "type": "ai_memory", "index": 0 }]]
+    },
+    "Search help center": {
+      "ai_tool": [[{ "node": "Customer Support Agent", "type": "ai_tool", "index": 0 }]]
+    },
+    "Look up fictional order": {
+      "ai_tool": [[{ "node": "Customer Support Agent", "type": "ai_tool", "index": 0 }]]
+    },
+    "Check return eligibility": {
+      "ai_tool": [[{ "node": "Customer Support Agent", "type": "ai_tool", "index": 0 }]]
+    },
+    "Escalate to human support": {
+      "ai_tool": [[{ "node": "Customer Support Agent", "type": "ai_tool", "index": 0 }]]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "31000000-0000-4000-8000-000000000015",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

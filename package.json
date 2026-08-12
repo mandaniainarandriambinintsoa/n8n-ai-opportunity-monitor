@@ -6,6 +6,7 @@
   "scripts": {
     "build": "node scripts/build-workflow.mjs",
     "check": "node scripts/validate-workflow.mjs",
-    "check:international": "node scripts/validate-international-workflow.mjs"
+    "check:international": "node scripts/validate-international-workflow.mjs",
+    "check:support-agent": "node scripts/validate-support-agent-workflow.mjs"
   }
 }
