@@ -4,6 +4,8 @@ Monitor RSS feeds for relevant freelance, hiring, sales or partnership opportuni
 
 This community edition is derived from a production opportunity-monitoring system. It contains no private API endpoint, credential identifier, client data or automatic outreach.
 
+The repository also contains the public [International Opportunity Agent](workflow/international-opportunity-agent.json), which adds OpenRouter drafting and Gmail review while keeping human approval mandatory.
+
 [Use the official template on n8n](https://n8n.io/workflows/17715-score-rss-opportunities-to-google-sheets-and-send-priority-digests-with-gmail/)
 
 ## What it does
@@ -88,6 +90,8 @@ npm run check
 ```
 
 The generated workflow is kept in version control so it can be inspected before import.
+
+The international agent is intentionally maintained as a separate import because it requires an OpenRouter credential and uses a different review flow.
 
 ## License
 

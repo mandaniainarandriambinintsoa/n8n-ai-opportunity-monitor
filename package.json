@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build-workflow.mjs",
-    "check": "node scripts/validate-workflow.mjs"
+    "check": "node scripts/validate-workflow.mjs",
+    "check:international": "node scripts/validate-international-workflow.mjs"
   }
 }

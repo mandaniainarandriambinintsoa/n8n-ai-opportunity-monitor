@@ -1,0 +1,216 @@
+{
+  "name": "Score freelance opportunities from RSS with OpenRouter and Gmail",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# Score freelance opportunities from RSS with OpenRouter and Gmail\n\n## Who is this for?\nFreelancers, consultants, agencies, automation specialists, and small teams that monitor public RSS feeds for relevant projects or hiring opportunities and want a structured review queue.\n\n## How it works\nThe workflow runs manually or every six hours. It reads each configured RSS feed sequentially, cleans the listing content, and calculates an explainable score from editable topic, commercial-intent, and exclusion keywords. Only listings that reach the minimum score are sent to OpenRouter. OpenRouter produces a concise first-contact draft based on the opportunity and the profile context. Gmail then sends the opportunity, score, matching reasons, source URL, and draft to a human reviewer.\n\n## How to set it up\n1. Open **Configure opportunity agent** and replace the sample RSS URLs.\n2. Adapt the include, priority, and exclusion keywords to your market.\n3. Set the minimum score, review email, OpenRouter model, and honest profile context.\n4. Add an n8n Header Auth credential for OpenRouter with `Authorization: Bearer YOUR_OPENROUTER_API_KEY`.\n5. Connect your Gmail OAuth credential in **Send draft for human review**.\n6. Run the manual trigger, inspect the output and email, then activate the schedule.\n\n## Requirements\n- n8n Cloud or self-hosted n8n\n- One or more public RSS feeds\n- An OpenRouter API key\n- A Gmail OAuth credential\n\n## Safety and customization\nNo application or outreach is sent automatically. A person must verify the source and edit every draft before responding. RSS content is untrusted input, so the prompt forbids invented experience, contact details, budget, or availability. You can change the schedule, score weights, model, threshold, profile, keywords, or replace Gmail with another human-review channel.",
+        "height": 620,
+        "width": 2640,
+        "color": 4
+      },
+      "id": "21000000-0000-4000-8000-000000000001",
+      "name": "Read me first",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-80, -700]
+    },
+    {
+      "parameters": {
+        "content": "## 1. Start and configure\n\nRun the workflow manually while testing or let it run every six hours after validation.\n\nEdit only **Configure opportunity agent** to set:\n- public RSS feed URLs, one per line;\n- include, priority, and exclusion keywords;\n- the score threshold;\n- the Gmail review recipient;\n- the OpenRouter model;\n- truthful profile context for the draft.\n\nKeep API keys in n8n credentials, never in this node.",
+        "height": 440,
+        "width": 820
+      },
+      "id": "21000000-0000-4000-8000-000000000013",
+      "name": "Step 1 - Start and configure",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-80, 360]
+    },
+    {
+      "parameters": {
+        "content": "## 2. Read RSS feeds\n\nThe feed list is built from the configuration and processed one URL at a time to keep executions predictable.\n\n**Read public RSS feed** retries temporary failures three times and continues when one feed is unavailable, so a broken source does not stop all other feeds.\n\nUse public RSS URLs only and test each source before activating the schedule.",
+        "height": 440,
+        "width": 550
+      },
+      "id": "21000000-0000-4000-8000-000000000014",
+      "name": "Step 2 - Read feeds",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [760, 360]
+    },
+    {
+      "parameters": {
+        "content": "## 3. Score and filter\n\nEach RSS item is cleaned and scored with visible rules:\n- topic keyword: +8;\n- priority or buying-intent keyword: +10;\n- exclusion keyword: -30.\n\nThe score stays between 0 and 100. Only items at or above **minimumScore** continue to OpenRouter. Lower-scoring items return to the feed loop without generating an AI call, which controls cost and noise.",
+        "height": 440,
+        "width": 600
+      },
+      "id": "21000000-0000-4000-8000-000000000015",
+      "name": "Step 3 - Score and filter",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [1260, 360]
+    },
+    {
+      "parameters": {
+        "content": "## 4. Draft and review\n\nOpenRouter receives only high-scoring listings and creates a concise draft in the listing language. The prompt requires factual wording and forbids invented claims.\n\nGmail sends the draft with the score, matching reasons, and original source URL to the configured reviewer.\n\n**Human approval is mandatory:** this workflow never applies, contacts a prospect, or sends the generated draft to the opportunity owner. Review the source and edit the draft before any response.",
+        "height": 440,
+        "width": 900
+      },
+      "id": "21000000-0000-4000-8000-000000000016",
+      "name": "Step 4 - Draft and review",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [1780, 360]
+    },
+    {
+      "parameters": {},
+      "id": "21000000-0000-4000-8000-000000000002",
+      "name": "Run manually",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 460]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "hours", "hoursInterval": 6 }]
+        }
+      },
+      "id": "21000000-0000-4000-8000-000000000003",
+      "name": "Run every 6 hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 620]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "rss", "name": "rssUrls", "type": "string", "value": "https://news.ycombinator.com/rss\nhttps://remoteok.com/remote-jobs.rss" },
+            { "id": "include", "name": "includeKeywords", "type": "string", "value": "n8n, automation, workflow, API, AI agent, integration, scraping" },
+            { "id": "priority", "name": "priorityKeywords", "type": "string", "value": "hire, freelance, contractor, consultant, project, remote, paid" },
+            { "id": "exclude", "name": "excludeKeywords", "type": "string", "value": "course, tutorial, newsletter, for hire, available for work" },
+            { "id": "threshold", "name": "minimumScore", "type": "number", "value": 70 },
+            { "id": "email", "name": "reviewEmail", "type": "string", "value": "YOUR_EMAIL@example.com" },
+            { "id": "model", "name": "openRouterModel", "type": "string", "value": "openai/gpt-4o-mini" },
+            { "id": "profile", "name": "candidateProfile", "type": "string", "value": "I build production n8n workflows, API integrations, AI automations and self-hosted systems. Keep drafts concise, factual and specific to the opportunity." }
+          ]
+        },
+        "options": {}
+      },
+      "id": "21000000-0000-4000-8000-000000000004",
+      "name": "Configure opportunity agent",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [260, 540]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const config = $input.first().json;\nconst urls = String(config.rssUrls || '').split(/\\r?\\n|,/).map(value => value.trim()).filter(value => /^https?:\\/\\//i.test(value));\nreturn urls.map(rssUrl => ({ json: { ...config, rssUrl } }));"
+      },
+      "id": "21000000-0000-4000-8000-000000000005",
+      "name": "Build feed list",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [520, 540]
+    },
+    {
+      "parameters": { "batchSize": 1, "options": {} },
+      "id": "21000000-0000-4000-8000-000000000006",
+      "name": "Process feeds one by one",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [780, 540]
+    },
+    {
+      "parameters": { "url": "={{ $json.rssUrl }}" },
+      "id": "21000000-0000-4000-8000-000000000007",
+      "name": "Read public RSS feed",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [1040, 660],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const config = $('Configure opportunity agent').first().json;\nconst include = String(config.includeKeywords || '').split(',').map(v => v.trim().toLowerCase()).filter(Boolean);\nconst priority = String(config.priorityKeywords || '').split(',').map(v => v.trim().toLowerCase()).filter(Boolean);\nconst exclude = String(config.excludeKeywords || '').split(',').map(v => v.trim().toLowerCase()).filter(Boolean);\nconst clean = value => String(value || '').replace(/<[^>]+>/g, ' ').replace(/&amp;/gi, '&').replace(/\\s+/g, ' ').trim();\nconst rows = $input.all().map(item => item.json || {});\nreturn rows.flatMap(row => {\n  const title = clean(row.title);\n  const url = String(row.link || row.guid || '').trim();\n  if (!title || !/^https?:\\/\\//i.test(url)) return [];\n  const description = clean(row.content || row.contentSnippet || row.description || row.summary).slice(0, 12000);\n  const haystack = `${title} ${description}`.toLowerCase();\n  const includeHits = include.filter(word => haystack.includes(word));\n  const priorityHits = priority.filter(word => haystack.includes(word));\n  const excludeHits = exclude.filter(word => haystack.includes(word));\n  const score = Math.max(0, Math.min(100, 20 + includeHits.length * 8 + priorityHits.length * 10 - excludeHits.length * 30));\n  return [{ json: { title, url, description, publishedAt: row.isoDate || row.pubDate || '', score, scoreReasons: [...includeHits.map(v => `topic: ${v}`), ...priorityHits.map(v => `intent: ${v}`), ...excludeHits.map(v => `excluded: ${v}`)], sourceFeed: config.rssUrl, reviewEmail: config.reviewEmail, minimumScore: config.minimumScore, openRouterModel: config.openRouterModel, candidateProfile: config.candidateProfile } }];\n});"
+      },
+      "id": "21000000-0000-4000-8000-000000000008",
+      "name": "Score opportunities",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1300, 660]
+    },
+    {
+      "parameters": {
+        "conditions": { "conditions": [{ "leftValue": "={{ $json.score }}", "rightValue": "={{ $json.minimumScore }}", "operator": { "type": "number", "operation": "gte" } }], "combinator": "and" },
+        "options": {}
+      },
+      "id": "21000000-0000-4000-8000-000000000009",
+      "name": "Priority opportunity?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [1560, 660]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "Content-Type", "value": "application/json" }] },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: $json.openRouterModel, temperature: 0.3, messages: [{ role: 'system', content: 'Write a concise, honest first-contact draft in the language of the listing. Never invent experience, budget, availability or contact details. Ask one useful next-step question. Return only the draft.' }, { role: 'user', content: `Profile: ${$json.candidateProfile}\\n\\nOpportunity title: ${$json.title}\\n\\nDescription: ${$json.description.slice(0, 6000)}\\n\\nURL: ${$json.url}` }] }) }}",
+        "options": { "response": { "response": { "responseFormat": "json" } }, "timeout": 60000 }
+      },
+      "id": "21000000-0000-4000-8000-000000000010",
+      "name": "Draft with OpenRouter",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [1820, 560]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const opportunity = $('Score opportunities').item.json;\nconst content = $input.first().json.choices?.[0]?.message?.content || 'No draft returned. Review the opportunity manually.';\nreturn [{ json: { to: opportunity.reviewEmail, subject: `[Review] ${opportunity.title}`, message: [`Human review required - nothing was sent automatically.`, ``, `Score: ${opportunity.score}/100`, `Reasons: ${opportunity.scoreReasons.join(', ') || 'none'}`, ``, `Draft:`, content, ``, `Source: ${opportunity.url}`, ``, `Review the listing and edit the draft before sending.`].join('\\n') } }];"
+      },
+      "id": "21000000-0000-4000-8000-000000000011",
+      "name": "Prepare review email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2080, 560]
+    },
+    {
+      "parameters": { "sendTo": "={{ $json.to }}", "subject": "={{ $json.subject }}", "message": "={{ $json.message }}", "options": {} },
+      "id": "21000000-0000-4000-8000-000000000012",
+      "name": "Send draft for human review",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [2340, 560]
+    }
+  ],
+  "connections": {
+    "Run manually": { "main": [[{ "node": "Configure opportunity agent", "type": "main", "index": 0 }]] },
+    "Run every 6 hours": { "main": [[{ "node": "Configure opportunity agent", "type": "main", "index": 0 }]] },
+    "Configure opportunity agent": { "main": [[{ "node": "Build feed list", "type": "main", "index": 0 }]] },
+    "Build feed list": { "main": [[{ "node": "Process feeds one by one", "type": "main", "index": 0 }]] },
+    "Process feeds one by one": { "main": [[{ "node": "Read public RSS feed", "type": "main", "index": 0 }]] },
+    "Read public RSS feed": { "main": [[{ "node": "Score opportunities", "type": "main", "index": 0 }]] },
+    "Score opportunities": { "main": [[{ "node": "Priority opportunity?", "type": "main", "index": 0 }]] },
+    "Priority opportunity?": { "main": [[{ "node": "Draft with OpenRouter", "type": "main", "index": 0 }], [{ "node": "Process feeds one by one", "type": "main", "index": 0 }]] },
+    "Draft with OpenRouter": { "main": [[{ "node": "Prepare review email", "type": "main", "index": 0 }]] },
+    "Prepare review email": { "main": [[{ "node": "Send draft for human review", "type": "main", "index": 0 }]] },
+    "Send draft for human review": { "main": [[{ "node": "Process feeds one by one", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1", "timezone": "Africa/Nairobi", "saveDataSuccessExecution": "none", "saveManualExecutions": true, "executionTimeout": 180 },
+  "active": false
+}
